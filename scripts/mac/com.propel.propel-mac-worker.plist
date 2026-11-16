@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Keep Cursor self-hosted worker "propel-mac" online with computer-use.
+  Install:
+    cp scripts/mac/com.propel.propel-mac-worker.plist ~/Library/LaunchAgents/
+    # Edit WorkingDirectory if clone is not ~/CUI-Jobber
+    launchctl load ~/Library/LaunchAgents/com.propel.propel-mac-worker.plist
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.propel.propel-mac-worker</string>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/marcs/CUI-Jobber</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>-lc</string>
+    <string>exec agent worker --computer-use --name "propel-mac" --worker-dir "/Users/marcs/CUI-Jobber" start</string>
+  </array>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <key>KeepAlive</key>
+  <true/>
+
+  <key>StandardOutPath</key>
+  <string>/Users/marcs/Library/Logs/propel-mac-worker.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>/Users/marcs/Library/Logs/propel-mac-worker.err.log</string>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>HOME</key>
+    <string>/Users/marcs</string>
+    <key>PATH</key>
+    <string>/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin</string>
+  </dict>
+</dict>
+</plist>
