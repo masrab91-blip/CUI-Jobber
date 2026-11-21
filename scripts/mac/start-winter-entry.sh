@@ -96,17 +96,24 @@ LOG_DIR="${HOME}/Library/Logs"
 mkdir -p "${LOG_DIR}"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 OUT_LOG="${LOG_DIR}/cui-winter-entry-run-${STAMP}.log"
-PROMPT_TMP="$(mktemp)"
-cleanup2() { rm -f "${PROMPT_TMP}"; }
+PROMPT_TMP="${LOG_DIR}/cui-winter-entry-prompt-${STAMP}.txt"
+WRAPPER_TMP="$(mktemp)"
+cleanup2() { rm -f "${WRAPPER_TMP}"; }
 trap cleanup2 EXIT
 printf '%s' "${PROMPT_TEXT}" > "${PROMPT_TMP}"
+cat > "${WRAPPER_TMP}" <<EOF
+#!/bin/bash
+set -euo pipefail
+cd "${REPO_ROOT}"
+exec "${AGENT_BIN}" -p --force --trust --workspace "${REPO_ROOT}" "\$(cat '${PROMPT_TMP}')"
+EOF
+chmod +x "${WRAPPER_TMP}"
 
 echo "Starting winter entry via local agent CLI (log: ${OUT_LOG})"
-# Run detached so LaunchAgent kickoffs don't block forever; still printable.
-nohup "${AGENT_BIN}" -p --force --trust --workspace "${REPO_ROOT}" \
-  "$(cat "${PROMPT_TMP}")" > "${OUT_LOG}" 2>&1 &
+nohup "${WRAPPER_TMP}" > "${OUT_LOG}" 2>&1 &
 PID=$!
 echo "ok"
 echo "mode: local-cli"
 echo "pid: ${PID}"
 echo "log: ${OUT_LOG}"
+echo "prompt: ${PROMPT_TMP}"
